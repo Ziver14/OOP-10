@@ -1,24 +1,128 @@
 ﻿#include <iostream>
 #include <vector>
+
 //Создание шаблонного связного списка
 
 template<typename Type> 
 
 class LinkedList {
 public:
-	LinkedList();
-	LinkedList(int n);// лист с уже созданными n элементами 
-	LinkedList(const LinkedList& other);
-	LinkedList(LinkedList&& other);//можно не делать но для оптимизации скорости программы полезно
-		//тут не будет реализации конструктора от списка инициализации, внесем позже
+	LinkedList()								//конструктор по умолчанию
+		:start_(nullptr),
+		end_(nullptr),
+		size_(0)
+	{ }
+	// лист с уже созданными n элементами 
+	LinkedList(int n) :LinkedList() {
+		if (n < 0) throw - 1;
+		if (n == 0)return;
+		Node *tmp{};
+		
+		int count{ 0 };
+		tmp = new Node{};
+		start_ = tmp;
+		end_ = tmp;
+		count += 1;
+		while (count < n) {
+			tmp = new Node{};// создаем новую точку
+			end_->Next(tmp); // старому концу списка говорим что конечый элемент существует
+			end_ = tmp; //запоминаем в списке элемент сейчас последний
+			count += 1;
+		}
 
-	~LinkedList();
+		size_ = n;
+	}
+	
+		
+	LinkedList(const LinkedList& other):LinkedList() {
+		if (other.size() == 0)return;
+		start_ = new Node(other.start_->Data()); //в начале нового списка создали новую точку в которую перенесли данные из предидущего списка
+		end_ = start_;
+		for (Node *current = other.start_->Next();current!=nullptr;current = current->Next()) {
+			//Node* tmp = new Node(other[i]); так лучше не делать, квадратные скобки самый медленный способ
+			Node* tmp = new Node(current->Data());
+			end_ -> Next(tmp);
+			end_ = tmp;
+		}
+		size_ = other.size_;
+	}
 
-	LinkedList& operator = (const LinkedList& other); // присваивание копированием
-	LinkedList& operator = (const LinkedList&& other);// присваивание переносом
+	LinkedList(LinkedList&& other):LinkedList() {
+		std::swap(start_, other.start_);				//можно не делать но для оптимизации скорости программы полезно
+		std::swap(end_, other.end_);					//тут не будет реализации конструктора от списка инициализации, внесем позже
+		std::swap(size_, other.size_);
+													
+													
+	}
 
-	Type & operator[](int i);
-	const Type& operator[](int i)const;
+	~LinkedList() {
+		Node* current = start_; 
+		while (current != nullptr;) {
+			Node* tmp = current->Next())
+			delete current;
+			current = tmp;
+		}
+		
+	}
+
+	void clear() {
+		Node* current = start_;
+		while (current != nullptr;) {
+			Node* tmp = current->Next())
+			delete current;
+			current = tmp;
+		}
+		start_ = nullptr;
+		end_ = nullptr;
+		size_ = 0;
+	}
+
+	// присваивание копированием
+	LinkedList& operator = (const LinkedList& other) {
+		clear();
+		if (other.size() == 0) return *this;
+		start_ = new Node(other.start_->Data()); //в начале нового списка создали новую точку в которую перенесли данные из предидущего списка
+		end_ = start_;
+		for (Node* current = other.start_->Next(); current != nullptr; current = current->Next()) {
+			Node* tmp = new Node(current->Data());
+			end_->Next(tmp);
+			end_ = tmp;
+		}
+		size_ = other.size_;
+		return *this;
+	}
+			
+
+	// присваивание переносом
+	LinkedList& operator = (const LinkedList&& other) {
+		clear();
+		std::swap(start_, other.start_);				//можно не делать но для оптимизации скорости программы полезно
+		std::swap(end_, other.end_);					//тут не будет реализации конструктора от списка инициализации, внесем позже
+		std::swap(size_, other.size_);
+		return *this;
+	}
+
+	//оператор доступа к хранящимся данным
+	Type& operator[](int i) {
+		int count{};
+		Node* tmp = start_;
+		while (count < i) {
+			tmp = tmp->Next;
+			count += 1;
+		}
+		return tmp->Data();
+	}
+
+
+	const Type& operator[](int i)const {
+		int count{};
+		Node* tmp = start_;
+		while (count < i) {
+			tmp = tmp->Next;
+			count += 1;
+		}
+		return tmp->Data();
+	}
 
 	Type& at(int i);
 	const Type& at(int i)const;
@@ -37,7 +141,8 @@ public:
 	*/
 
 	int size() const {
-		return size_ };
+		return size_;
+	}
 
 	/*
 	* методы для прохода по коллекции умными указателями
